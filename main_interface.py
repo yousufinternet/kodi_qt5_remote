@@ -16,6 +16,7 @@ import webbrowser
 
 # added a note to see how git behaves
 # new change on a specific branch, now merged with master
+# this one is to test commiting from visual studio code
 
 class MainWindow(QWidget):
 
