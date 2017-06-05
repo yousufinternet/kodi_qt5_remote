@@ -171,9 +171,17 @@ class MainWindow(QWidget):
                  'Left', 'OK', 'Right',
                  'OSD', 'Down', 'Back']
         positions = [(i, j) for i in range(1, 4) for j in range(3)]
+        icons = ['menu.png', 'go-up.png', 'subtitles.png',
+                'go-left.png', 'ok.png', 'go-right.png', 
+                'osd.png', 'go-down.png', 'back.png']
 
-        for position, name in zip(positions, names):
-            button = QPushButton(name)
+        for position, name, icon in zip(positions, names, icons):
+            if name != 'Subs':
+                button = PicButton(QPixmap('./buttons/' + icon))
+                button.setFixedSize(button.sizeHint())
+                button.setText(name)
+            else:
+                button = QPushButton(name)
             button.clicked.connect(self.commander)
             button.setDisabled(True)
             self.save_button(button)
@@ -218,11 +226,17 @@ class MainWindow(QWidget):
         self.connect_btn.clicked.connect(self.loadconfig)
 
         # Delete xbmc_conf file button
-        delete_config_btn = QPushButton('Reset Conf')
+        delete_config_btn = PicButton(QPixmap('./buttons/view-refresh.png'))
+        delete_config_btn.setFixedSize(delete_config_btn.sizeHint())
+        delete_config_btn.setToolTip('Delete saved\nserver configurations')
         delete_config_btn.clicked.connect(self.delete_config)
         hbox.addWidget(delete_config_btn)
+
         # About Button
-        about_btn = QPushButton('About')
+        about_btn = PicButton(QPixmap('./buttons/help-about.png'))
+        about_btn.setText('another test')
+        about_btn.setFixedSize(about_btn.sizeHint())
+        about_btn.setToolTip('about this utility')
         about_btn.clicked.connect(self.aboutdialog)
         hbox.addWidget(about_btn)
         self.grid.addLayout(hbox, 0, 0, 1, 3)
