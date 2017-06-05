@@ -14,6 +14,7 @@ import time
 import threading
 import webbrowser
 
+# added a note to see how git behaves
 
 class MainWindow(QWidget):
 
