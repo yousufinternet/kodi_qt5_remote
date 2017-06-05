@@ -15,6 +15,7 @@ import threading
 import webbrowser
 
 # added a note to see how git behaves
+# new change on a specific branch
 
 class MainWindow(QWidget):
 
