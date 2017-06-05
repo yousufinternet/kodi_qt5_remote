@@ -3,9 +3,9 @@ import sys
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QInputDialog,
                              QPushButton, QSlider, QTableWidget, QTableWidgetItem,
                              QApplication, QLabel, QVBoxLayout, QMenu, QAction,
-                             QHBoxLayout, QSizePolicy, QStatusBar)
-from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtCore import Qt, QSize
+                             QHBoxLayout, QSizePolicy, QStatusBar, QAbstractButton)
+from PyQt5.QtGui import QFont, QIcon, QPainter, QPixmap
+from PyQt5.QtCore import Qt, QSize, QRect
 
 from xbmcjson import XBMC, PLAYER_VIDEO
 from yalla_shoot_parser import get_matches_list
@@ -17,6 +17,36 @@ import webbrowser
 # added a note to see how git behaves
 # new change on a specific branch, now merged with master
 # this one is to test commiting from visual studio code
+
+class PicButton(QAbstractButton):
+    def __init__(self, icon):
+        super().__init__()
+        self.pixmap = QPixmap('./buttons/weird.png')
+        self.pixmap_hover = QPixmap('./buttons/weird_hover.png')
+        self.pixmap_pressed = QPixmap('./buttons/weird-pressed.png')
+        self.icon = icon
+
+        self.pressed.connect(self.update)
+        self.released.connect(self.update)
+
+    def paintEvent(self, event):
+        pix = self.pixmap_hover if self.underMouse() else self.pixmap
+        if self.isDown():
+            pix = self.pixmap_pressed
+
+        painter = QPainter(self)
+        painter.drawPixmap(event.rect(), pix)
+        painter.drawPixmap(event.rect(), self.icon)
+
+    def enterEvent(self, event):
+        self.update()
+
+    def leaveEvent(self, event):
+        self.update()
+
+    def sizeHint(self):
+        return QSize(100, 100)
+
 
 class MainWindow(QWidget):
 
@@ -180,7 +210,10 @@ class MainWindow(QWidget):
 
         # Connect to KODI button
         hbox = QHBoxLayout()
-        self.connect_btn = QPushButton('Connect', self)
+        self.connect_btn = PicButton(QPixmap('./buttons/curve-connector.png'))
+        self.connect_btn.setFixedSize(self.connect_btn.sizeHint())
+        self.connect_btn.setToolTip('Connect to Kodi')
+        # self.connect_btn.setIcon(QIcon('./buttons/curve-connector.svg'))
         hbox.addWidget(self.connect_btn)
         self.connect_btn.clicked.connect(self.loadconfig)
 
