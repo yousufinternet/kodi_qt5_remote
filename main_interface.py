@@ -18,36 +18,6 @@ import webbrowser
 # new change on a specific branch, now merged with master
 # this one is to test commiting from visual studio code
 
-class PicButton(QAbstractButton):
-    def __init__(self, icon):
-        super().__init__()
-        self.pixmap = QPixmap('./buttons/weird.png')
-        self.pixmap_hover = QPixmap('./buttons/weird_hover.png')
-        self.pixmap_pressed = QPixmap('./buttons/weird-pressed.png')
-        self.icon = icon
-
-        self.pressed.connect(self.update)
-        self.released.connect(self.update)
-
-    def paintEvent(self, event):
-        pix = self.pixmap_hover if self.underMouse() else self.pixmap
-        if self.isDown():
-            pix = self.pixmap_pressed
-
-        painter = QPainter(self)
-        painter.drawPixmap(event.rect(), pix)
-        painter.drawPixmap(event.rect(), self.icon)
-
-    def enterEvent(self, event):
-        self.update()
-
-    def leaveEvent(self, event):
-        self.update()
-
-    def sizeHint(self):
-        return QSize(100, 100)
-
-
 class MainWindow(QWidget):
 
     def __init__(self):
