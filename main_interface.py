@@ -15,7 +15,7 @@ import threading
 import webbrowser
 
 # added a note to see how git behaves
-# new change on a specific branch
+# new change on a specific branch, now merged with master
 
 class MainWindow(QWidget):
 
