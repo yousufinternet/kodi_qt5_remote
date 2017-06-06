@@ -18,6 +18,7 @@ import webbrowser
 # new change on a specific branch, now merged with master
 # this one is to test commiting from visual studio code
 
+
 class MainWindow(QWidget):
 
     def __init__(self):
@@ -39,7 +40,8 @@ class MainWindow(QWidget):
         self.button_map['Play/Pause'].setCheckable(True)
         # the match list toggle button
         self.match_list_toggle = QPushButton('<')
-        self.match_list_toggle.setSizePolicy(QSizePolicy().Fixed, QSizePolicy().Expanding)
+        self.match_list_toggle.setSizePolicy(
+            QSizePolicy().Fixed, QSizePolicy().Expanding)
         self.match_list_toggle.setMaximumWidth(40)
         self.grid.addWidget(self.match_list_toggle, 1, 4, 4, 1)
         self.match_list_toggle.clicked.connect(self.toggle_matches)
@@ -131,7 +133,8 @@ class MainWindow(QWidget):
             off_action.triggered.connect(lambda: self.xbmc_conn.Player.SetSubtitle(
                 playerid=PLAYER_VIDEO, subtitle="off", enable=False))
             for item in subs_list:
-                item_action = QAction(item['language'].title(), self.button_map['Subs'])
+                item_action = QAction(
+                    item['language'].title(), self.button_map['Subs'])
                 item_action.triggered.connect(lambda: self.xbmc_conn.Player.SetSubtitle(
                     playerid=PLAYER_VIDEO, subtitle=item['index'], enable=True))
                 self.menu_obj.addAction(item_action)
@@ -142,8 +145,8 @@ class MainWindow(QWidget):
                  'OSD', 'Down', 'Back']
         positions = [(i, j) for i in range(1, 4) for j in range(3)]
         icons = ['menu.png', 'go-up.png', 'subtitles.png',
-                'go-left.png', 'ok.png', 'go-right.png', 
-                'osd.png', 'go-down.png', 'back.png']
+                 'go-left.png', 'ok.png', 'go-right.png',
+                 'osd.png', 'go-down.png', 'back.png']
 
         for position, name, icon in zip(positions, names, icons):
             if name != 'Subs':
@@ -326,12 +329,14 @@ class MainWindow(QWidget):
 
     def toggle_matches(self):
         if not self.matches_list_widget.isHidden():
-            self.matches_list_widget.setHidden(not self.matches_list_widget.isHidden())
+            self.matches_list_widget.setHidden(
+                not self.matches_list_widget.isHidden())
             self.grid.removeWidget(self.matches_list_widget)
             self.match_list_toggle.setText('>')
         else:
             self.grid.addWidget(self.matches_list_widget, 0, 5, 4, 4)
-            self.matches_list_widget.setHidden(not self.matches_list_widget.isHidden())
+            self.matches_list_widget.setHidden(
+                not self.matches_list_widget.isHidden())
             self.match_list_toggle.setText('<')
 
     def loadconfig(self):
