@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui, Qt
 from xbmcjson import PLAYER_VIDEO, XBMC
 import shutil
 from yalla_shoot_parser import get_matches_list
@@ -50,6 +50,7 @@ class mainWindow(QtWidgets.QWidget):
         # Expiremental Stylesheet coding
 
         self.main_box.addWidget(self.matches_widget)
+        # self.main_box.setAlignment(Qt.Qt.AlignCenter)
         self.setLayout(self.main_box)
 
         self.setStyleSheet(
@@ -58,22 +59,22 @@ class mainWindow(QtWidgets.QWidget):
             border-style: outset;\
             border-width: 2px;\
             border-color: white;\
-            font: bold 24px;\
-            min-width: 3em;\
+            font: bold t4px;\
+            min-width: 1em;\
             padding: 5px;}\
             QPushButton:hover {background-color: \#414141;\
             border-style: outset;\
             border-width: 5px;\
             border-color: white;\
             font: bold 24px;\
-            min-width: 3em;\
+            min-width: 1em;\
             padding: 5px;}\
             QPushButton:pressed {background-color: \#232323;\
             border-style: outset;\
             border-width: 5px;\
             border-color: white;\
             font: bold 24px;\
-            min-width: 3em;\
+            min-width: 1em;\
             padding: 5px;}\
             QPushButton:disabled {background-color: \#606060;}\
             QPushButton#topleft { border-top-left-radius: 15px;}\
@@ -109,7 +110,7 @@ class mainWindow(QtWidgets.QWidget):
             self.matches_widget.resizeRowsToContents()
             total_table_width = sum([self.matches_widget.columnWidth(i)
                                      for i in range(0, 3)])
-            self.matches_widget.setMinimumWidth(total_table_width + 2)
+            self.matches_widget.setMinimumWidth(total_table_width)
         pass
 
     def addButtons(self):
@@ -122,44 +123,59 @@ class mainWindow(QtWidgets.QWidget):
         vbox5 = QtWidgets.QVBoxLayout()
         hbox1 = QtWidgets.QHBoxLayout()
         hbox2 = QtWidgets.QHBoxLayout()
+        hbox3 = QtWidgets.QHBoxLayout()
 
+        vboxes = [vbox1, vbox2, vbox3, vbox4, vbox5]
+        hboxes = [hbox1, hbox2, hbox3]
         # we want the buttons to stick to each other
         vbox1.setSpacing(0)
         vbox2.setSpacing(0)
         vbox3.setSpacing(0)
 
-        up_button = QtWidgets.QPushButton('')
-        up_button.setIcon(QtGui.QIcon('./buttons/go-up.png'))
-        up_button.setIconSize(QtCore.QSize(48, 48))
-        down_button = QtWidgets.QPushButton('')
-        down_button.setIcon(QtGui.QIcon('./buttons/go-down.png'))
-        down_button.setIconSize(QtCore.QSize(48, 48))
-        left_button = QtWidgets.QPushButton('')
-        left_button.setIcon(QtGui.QIcon('./buttons/go-left.png'))
-        left_button.setIconSize(QtCore.QSize(48, 48))
-        right_button = QtWidgets.QPushButton('')
-        right_button.setIcon(QtGui.QIcon('./buttons/go-right.png'))
-        right_button.setIconSize(QtCore.QSize(48, 48))
-        menu_button = QtWidgets.QPushButton('')
-        menu_button.setIcon(QtGui.QIcon('./buttons/menu.png'))
-        menu_button.setIconSize(QtCore.QSize(48, 48))
-        menu_button.setObjectName('topleft')
-        osd_button = QtWidgets.QPushButton('')
-        osd_button.setIcon(QtGui.QIcon('./buttons/osd.png'))
-        osd_button.setIconSize(QtCore.QSize(48, 48))
-        osd_button.setObjectName('botleft')
-        back_button = QtWidgets.QPushButton('')
-        back_button.setIcon(QtGui.QIcon('./buttons/back.png'))
-        back_button.setIconSize(QtCore.QSize(48, 48))
-        back_button.setObjectName('botright')
-        subs_button = QtWidgets.QPushButton('')
-        subs_button.setIcon(QtGui.QIcon('./buttons/subtitles.png'))
-        subs_button.setIconSize(QtCore.QSize(48, 48))
-        subs_button.setObjectName('topright')
-        ok_button = QtWidgets.QPushButton('')
-        ok_button.setIcon(QtGui.QIcon('./buttons/ok.png'))
-        ok_button.setIconSize(QtCore.QSize(48, 48))
-        ok_button.setObjectName('center')
+        control_buttons = [
+            {'name': 'menu', 'object': None, 'style': 'topleft',
+                'height': None, 'Icon': 'menu.png', 'icon-size': 48, 'shortcut': None},
+            {'name': 'right', 'object': None, 'style': None,
+             'height': None, 'Icon': 'go-left.png', 'icon-size': 48, 'shortcut': 'Right'},
+            {'name': 'osd', 'object': None, 'style': 'botleft',
+             'height': None, 'Icon': 'osd.png', 'icon-size': 48, 'shortcut': None},
+            {'name': 'up', 'object': None, 'style': None,
+                'height': None, 'Icon': 'go-up.png', 'icon-size': 48, 'shortcut': 'Up'},
+            {'name': 'ok', 'object': None, 'style': None,
+                'height': None, 'Icon': 'ok.png', 'icon-size': 48, 'shortcut': 'Return'},
+            {'name': 'down', 'object': None, 'style': None,
+                'height': None, 'Icon': 'go-down.png', 'icon-size': 48, 'shortcut': 'Down'},
+            {'name': 'subs', 'object': None, 'style': 'topright',
+                'height': None, 'Icon': 'subtitles.png', 'icon-size': 48, 'shortcut': None},
+            {'name': 'right', 'object': None, 'style': None,
+                'height': None, 'Icon': 'go-right.png', 'icon-size': 48, 'shortcut': 'Right'},
+            {'name': 'back', 'object': None, 'style': 'botright',
+                'height': None, 'Icon': 'back.png', 'icon-size': 48, 'shortcut': 'Backspace'},
+        ]
+
+        for item in control_buttons:
+            item['object'] = QtWidgets.QPushButton()
+            item['object'].setIcon(QtGui.QIcon('./buttons/' + item['Icon']))
+            item['object'].setIconSize(QtCore.QSize(
+                item['icon-size'], item['icon-size']))
+            if item['style'] is not None:
+                item['object'].setObjectName(item['style'])
+            if item['height'] is not None:
+                item['object'].setFixedHeight(item['height'])
+
+        for idx, item in enumerate(control_buttons):
+            vbox_idx = int(idx / 3)
+            if idx % 3 == 0 and idx == 0:
+                vboxes[vbox_idx].addStretch()
+            elif idx % 3 == 0 and idx > 0:
+                vboxes[vbox_idx].addStretch()
+                vboxes[vbox_idx - 1].addStretch()
+            vboxes[vbox_idx].addWidget(item['object'])
+
+        hbox2.addStretch()
+        for vbox in vboxes[:3]:
+            hbox2.addLayout(vbox)
+        hbox2.addStretch()
 
         connect_button = QtWidgets.QPushButton('')
         connect_button.setIcon(QtGui.QIcon('./buttons/curve-connector.png'))
@@ -173,42 +189,70 @@ class mainWindow(QtWidgets.QWidget):
         about_button.setIconSize(QtCore.QSize(48, 48))
         about_button.setObjectName('right')
 
+        play_button = QtWidgets.QPushButton('')
+        play_button.setIcon(QtGui.QIcon('./buttons/play.png'))
+        play_button.setIconSize(QtCore.QSize(16, 16))
+        play_button.setObjectName('left')
+        play_button.setFixedSize(32, 32)
+        stop_button = QtWidgets.QPushButton('')
+        stop_button.setIcon(QtGui.QIcon('./buttons/stop.png'))
+        stop_button.setIconSize(QtCore.QSize(16, 16))
+        stop_button.setFixedHeight(40)
+        rewind_button = QtWidgets.QPushButton('')
+        rewind_button.setIcon(QtGui.QIcon('./buttons/rewind.png'))
+        rewind_button.setIconSize(QtCore.QSize(16, 16))
+        rewind_button.setFixedHeight(32)
+        forward_button = QtWidgets.QPushButton('')
+        forward_button.setIcon(QtGui.QIcon('./buttons/forward.png'))
+        forward_button.setIconSize(QtCore.QSize(16, 16))
+        forward_button.setObjectName('right')
+        forward_button.setFixedHeight(40)
+
         hbox1.addStretch()
         hbox1.addWidget(connect_button)
         hbox1.addWidget(reset_button)
         hbox1.addWidget(about_button)
         hbox1.addStretch()
 
-        up_button.setDisabled(True)
+        # up_button.setDisabled(True)
 
-        vbox1.addStretch()
-        vbox1.addWidget(menu_button)
-        vbox1.addWidget(left_button)
-        vbox1.addWidget(osd_button)
-        vbox1.addStretch()
+        # vbox1.addStretch()
+        # vbox1.addWidget(menu_button)
+        # vbox1.addWidget(left_button)
+        # vbox1.addWidget(osd_button)
+        # vbox1.addStretch()
 
-        vbox2.addStretch()
-        vbox2.addWidget(up_button)
-        vbox2.addWidget(ok_button)
-        vbox2.addWidget(down_button)
-        vbox2.addStretch()
+        # vbox2.addStretch()
+        # vbox2.addWidget(up_button)
+        # vbox2.addWidget(ok_button)
+        # vbox2.addWidget(down_button)
+        # vbox2.addStretch()
 
-        vbox3.addStretch()
-        vbox3.addWidget(subs_button)
-        vbox3.addWidget(right_button)
-        vbox3.addWidget(back_button)
-        vbox3.addStretch()
+        # vbox3.addStretch()
+        # vbox3.addWidget(subs_button)
+        # vbox3.addWidget(right_button)
+        # vbox3.addWidget(back_button)
+        # vbox3.addStretch()
 
-        hbox2.addStretch()
-        hbox2.addLayout(vbox1)
-        hbox2.addLayout(vbox2)
-        hbox2.addLayout(vbox3)
-        hbox2.addStretch()
+        # hbox2.addStretch()
+        # hbox2.addLayout(vbox1)
+        # hbox2.addLayout(vbox2)
+        # hbox2.addLayout(vbox3)
+        # hbox2.addStretch()
+
+        hbox3.addStretch()
+        hbox3.addWidget(play_button)
+        hbox3.addWidget(stop_button)
+        hbox3.addWidget(rewind_button)
+        hbox3.addWidget(forward_button)
+        hbox3.addStretch()
 
         vbox4.addStretch()
         vbox4.addLayout(hbox1)
         vbox4.addSpacing(30)
         vbox4.addLayout(hbox2)
+        vbox4.addSpacing(30)
+        vbox4.addLayout(hbox3)
         vbox4.addStretch()
 
         self.main_box.addLayout(vbox4)
