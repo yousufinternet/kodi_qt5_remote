@@ -54,6 +54,25 @@ class mainWindow(QtWidgets.QWidget):
         super().__init__()
         self.initUI()
 
+    def create_buttons(self, buttons_list):
+        for item in buttons_list:
+            item['object'] = QtWidgets.QPushButton()
+            if item['Icon'] is not None:
+                item['object'].setIcon(
+                    QtGui.QIcon('./buttons/' + item['Icon']))
+                item['object'].setIconSize(QtCore.QSize(
+                    item['icon-size'], item['icon-size']))
+            else:
+                item['object'].setText(item['name'])
+            if item['style'] is not None:
+                item['object'].setObjectName(item['style'])
+            if item['height'] is not None:
+                item['object'].setFixedSize(item['height'], item['height'])
+            if item['shortcut'] is not None:
+                item['object'].setShortcut(item['shortcut'])
+            item['object'].clicked.connect(
+                partial(self.commander, item['name']))
+
     def initUI(self):
 
         self.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
@@ -79,12 +98,12 @@ class mainWindow(QtWidgets.QWidget):
         # Expiremental Stylesheet coding
 
         self.setStyleSheet(
-            'QWidget {background-color:\#232323;}\
+            'QWidget {background-color:\#232323; padding: 0px;}\
             QPushButton {background-color: black;\
             border-style: outset;\
             border-width: 2px;\
             border-color: white;\
-            font: bold t4px;\
+            font: bold 24px;\
             min-width: 1em;\
             padding: 5px;}\
             QPushButton:hover {background-color: \#414141;\
@@ -102,6 +121,8 @@ class mainWindow(QtWidgets.QWidget):
             min-width: 1em;\
             padding: 5px;}\
             QPushButton:disabled {background-color: \#606060;}\
+            QPushButton#small:hover {font: normal 15px;}\
+            QPushButton#small:pressed {font: normal 15px;}\
             QPushButton#topleft { border-top-left-radius: 15px;}\
             QPushButton#topright { border-top-right-radius: 15px;}\
             QPushButton#botright { border-bottom-right-radius: 15px;}\
@@ -122,7 +143,7 @@ class mainWindow(QtWidgets.QWidget):
             QPushButton#leftred:pressed {background-color: \#1d0000}\
             QPushButton#leftsmall {border-bottom-left-radius: 15px;\
             border-top-left-radius: 15px; font: 15px;}\
-            QPushButton#small {font: 15px;}\
+            QPushButton#small {font: 15px; min-width: 40px;}\
             QTableWidget {background-color:\#232323;}\
             QSlider:groove{border: 1px solid white;\
             width: 8px;\
@@ -141,10 +162,27 @@ class mainWindow(QtWidgets.QWidget):
         self.matches_thread.statussignal.connect(self.status_label_1.setText)
         self.matches_thread.start()
 
+        self.oldPos = self.pos()
+
         # window settings
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setWindowIcon(QtGui.QIcon('./Images/kodi_icon.png'))
         self.show()
+
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    # def mouseMoveEvent(self, event):
+    #     delta = QtCore.QPoint(
+    #         (event.globalPos() - self.oldPos) * 2)
+    #     self.move(self.x() + delta.x(), self.y() + delta.y())
+    #     self.oldPos = event.globalPos()
+
+    def mouseReleaseEvent(self, event):
+        delta = QtCore.QPoint(
+            (event.globalPos() - self.oldPos) * self.devicePixelRatio())
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
 
     def update_match_table(self, matches_list):
         self.matches_list = matches_list
@@ -277,23 +315,11 @@ class mainWindow(QtWidgets.QWidget):
                 'height': 32, 'Icon': 'error.png', 'icon-size': 24, 'shortcut': None},
         ]
 
-        for item in self.control_buttons:
-            item['object'] = QtWidgets.QPushButton()
-            if item['Icon'] is not None:
-                item['object'].setIcon(
-                    QtGui.QIcon('./buttons/' + item['Icon']))
-                item['object'].setIconSize(QtCore.QSize(
-                    item['icon-size'], item['icon-size']))
-            else:
-                item['object'].setText(item['name'])
-            if item['style'] is not None:
-                item['object'].setObjectName(item['style'])
-            if item['height'] is not None:
-                item['object'].setFixedSize(item['height'], item['height'])
-            if item['shortcut'] is not None:
-                item['object'].setShortcut(item['shortcut'])
-            item['object'].clicked.connect(
-                partial(self.commander, item['name']))
+        self.channels_buttons = [{'name': 'Ch%s' % i, 'object': None, 'style': 'small', 'height': 32,
+                                  'Icon': None, 'icon-size': None, 'shortcut': None} for i in range(1, 26)]
+
+        self.create_buttons(self.control_buttons)
+        self.create_buttons(self.channels_buttons)
 
         # Subtitles menu object, see also updatesub function
         self.subs_menu = QtWidgets.QMenu(self.control_buttons[6]['object'])
@@ -310,11 +336,57 @@ class mainWindow(QtWidgets.QWidget):
                 vboxes[vbox_idx - 1].addStretch()
             vboxes[vbox_idx].addWidget(item['object'])
 
+        # channels quality and organization code starts here
+        vbox8 = QtWidgets.QVBoxLayout()
+        vbox8.setSpacing(0)
+        options_hbox = QtWidgets.QHBoxLayout()
+        self.option_240 = QtWidgets.QRadioButton('240')
+        self.option_360 = QtWidgets.QRadioButton('360')
+        self.option_720 = QtWidgets.QRadioButton('720')
+        options_hbox.addStretch()
+        options_hbox.addWidget(self.option_240)
+        options_hbox.addWidget(self.option_360)
+        options_hbox.addWidget(self.option_720)
+        options_hbox.addStretch()
+        vbox8.addLayout(options_hbox)
+
+        for idx, item in enumerate(self.channels_buttons):
+            if idx % 5 == 0:
+                if hbox:
+                    hbox.addStretch()
+                hbox = QtWidgets.QHBoxLayout()
+                hbox.setSpacing(0)
+                hbox.addStretch()
+                vbox8.addLayout(hbox)
+            # item['object'].setFont(QtGui.QFont('Sans', 6))
+            item['object'].setCheckable(True)
+            item['object'].setDisabled(True)
+            hbox.addWidget(item['object'])
+        hbox.addStretch()
+        # channels quality and organization code ends here
+
         for idx, item in enumerate(self.control_buttons[9:12]):
             hbox1.addWidget(item['object'])
+
+        # Volume slider
         self.volume_slider = QtWidgets.QSlider()
         self.volume_slider.setValue(100)
-        self.volume_slider.setMaximumHeight(200)
+        self.volume_slider.setMinimumHeight(200)
+        self.mutebutton = QtWidgets.QPushButton()
+        self.mutebutton.setFlat(True)
+        self.mutebutton.setIcon(QtGui.QIcon('buttons/volume_full.png'))
+        self.mutebutton.setStyleSheet('background-color: #232323;\
+        border-width: 0px;')
+
+        vbox7 = QtWidgets.QVBoxLayout()
+        vbox7.addStretch()
+        vbox7.addWidget(self.volume_slider)
+        vbox7.setAlignment(self.volume_slider, QtCore.Qt.AlignHCenter)
+        vbox7.addWidget(self.mutebutton)
+        vbox7.setSpacing(0)
+        vbox7.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
+        vbox7.addStretch()
+        vbox7.setGeometry(QtCore.QRect(0, 0, 100, 80))
 
         for vbox in vboxes[:3]:
             hbox2.addLayout(vbox)
@@ -351,15 +423,16 @@ class mainWindow(QtWidgets.QWidget):
         vbox5.addWidget(self.matches_widget)
         vbox5.setAlignment(self.matches_widget, QtCore.Qt.AlignHCenter)
 
-        self.main_box.setSpacing(0)
         self.main_box.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
-        self.main_box.addWidget(self.volume_slider)
+        self.main_box.addLayout(vbox7)
         self.main_box.addSpacing(20)
         self.main_box.addLayout(vbox4)
         self.main_box.addSpacing(30)
         self.main_box.addLayout(vbox5)
+        self.main_box.setSpacing(0)
 
         vbox6.addLayout(self.main_box)
+        vbox6.addLayout(vbox8)
         vbox6.addSpacing(20)
         vbox6.addWidget(self.status_label_1)
 
@@ -375,6 +448,25 @@ class mainWindow(QtWidgets.QWidget):
             for button in self.control_buttons[12:16]:
                 button['object'].setDisabled(True)
             return
+
+        if 'Ch' in name:
+            for channel in self.channels_buttons:
+                if channel['name'] != name:
+                    channel['object'].setChecked(False)
+                else:
+                    channel['object'].setChecked(True)
+
+        if 'Ch' in name and self.option_240.isChecked():
+            self.xbmc_conn.Player.Open(
+                item={"file": 'http://stream.elcld.com:6001/ch%s/stream_240p/stream.m3u8' % re.match(r'Ch(\d+)', name).group(1)})
+
+        if 'Ch' in name and self.option_360.isChecked():
+            self.xbmc_conn.Player.Open(
+                item={"file": 'http://stream.elcld.com:6001/ch%s/stream_360p/stream.m3u8' % re.match(r'Ch(\d+)', name).group(1)})
+
+        if 'Ch' in name and self.option_720.isChecked():
+            self.xbmc_conn.Player.Open(
+                item={"file": 'http://stream.elcld.com:6001/ch%s/stream_720p/stream.m3u8' % re.match(r'Ch(\d+)', name).group(1)})
 
         if name == 'connect':
             if shutil.os.path.exists('xbmcconf.cfg'):
@@ -415,6 +507,8 @@ class mainWindow(QtWidgets.QWidget):
             self.volume_slider.valueChanged[int].connect(
                 lambda: self.xbmc_conn.Application.setVolume(volume=self.volume_slider.value()))
             for item in self.control_buttons:
+                item['object'].setDisabled(False)
+            for item in self.channels_buttons:
                 item['object'].setDisabled(False)
 
         if name == 'reset':
