@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtCore, QtGui, Qt
-from xbmcjson import PLAYER_VIDEO, XBMC
+from kodijson import PLAYER_VIDEO, Kodi
 import shutil
 from yalla_shoot_parser import get_matches_list
 import time
 import sys
-import shutil
+import webbrowser
 from functools import partial
 import socket
 import datetime
@@ -56,6 +56,7 @@ class mainWindow(QtWidgets.QWidget):
 
     def initUI(self):
 
+        self.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
         self.main_box = QtWidgets.QHBoxLayout()
         self.main_box.setSpacing(0)
 
@@ -66,9 +67,12 @@ class mainWindow(QtWidgets.QWidget):
         self.matches_widget.setIconSize(QtCore.QSize(64, 64))
         self.matches_widget.horizontalHeader().hide()
         self.matches_widget.verticalHeader().hide()
+        self.matches_widget.setLayoutDirection(QtCore.Qt.RightToLeft)
         # self.matches_widget.setAlternatingRowColors(True)
         self.matches_widget.setEditTriggers(
             QtWidgets.QTableWidget.NoEditTriggers)
+        self.matches_widget.cellClicked.connect(
+            lambda: webbrowser.open_new_tab(self.matches_list[self.matches_widget.currentRow()][5]))
 
         self.addButtons()
 
@@ -108,10 +112,27 @@ class mainWindow(QtWidgets.QWidget):
             border-top-right-radius: 15px;}\
             QPushButton#rightsmall {border-bottom-right-radius: 15px;\
             border-top-right-radius: 15px; font: 15px;}\
+            QPushButton#rightred {border-bottom-right-radius: 15px;\
+            border-top-right-radius: 15px; background-color: \#5a0000}\
+            QPushButton#rightred:hover {background-color: \#b90000}\
+            QPushButton#rightred:pressed {background-color: \#1d0000}\
+            QPushButton#leftred {border-bottom-left-radius: 15px;\
+            border-top-left-radius: 15px; background-color: \#5a0000}\
+            QPushButton#leftred:hover {background-color: \#b90000}\
+            QPushButton#leftred:pressed {background-color: \#1d0000}\
             QPushButton#leftsmall {border-bottom-left-radius: 15px;\
             border-top-left-radius: 15px; font: 15px;}\
             QPushButton#small {font: 15px;}\
             QTableWidget {background-color:\#232323;}\
+            QSlider:groove{border: 1px solid white;\
+            width: 8px;\
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:1 \#2a2a2a, stop:0 \#8d0000);}\
+            QSlider:handle {border: 1px solid white;\
+            background: black;\
+            height: 20px;\
+            width: 20px;\
+            margin: -1px -5;\
+            border-radius: 5px; }\
             '
         )
         # Starting the matches thread
@@ -126,6 +147,7 @@ class mainWindow(QtWidgets.QWidget):
         self.show()
 
     def update_match_table(self, matches_list):
+        self.matches_list = matches_list
         self.matches_widget.setRowCount(len(matches_list))
         for idx, match in enumerate(matches_list):
             right_icon = QtGui.QIcon(match[0])
@@ -177,54 +199,82 @@ class mainWindow(QtWidgets.QWidget):
         hbox4 = QtWidgets.QHBoxLayout()
         hbox5 = QtWidgets.QHBoxLayout()
 
-        vboxes = [vbox1, vbox2, vbox3, vbox4, vbox5]
-        hboxes = [hbox1, hbox2, hbox3]
         # we want the buttons to stick to each other
-        vbox1.setSpacing(0)
-        vbox2.setSpacing(0)
-        vbox3.setSpacing(0)
-        vbox4.setSpacing(0)
+        vboxes = [vbox1, vbox2, vbox3, vbox4, vbox5]
+        hboxes = [hbox1, hbox2, hbox3, hbox4, hbox5]
+        for vbox, hbox in zip(vboxes, hboxes):
+            vbox.setSpacing(0)
+            vbox.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
+            hbox.setSpacing(0)
+            hbox.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
 
         self.control_buttons = [
+            # 1
             {'name': 'menu', 'object': None, 'style': 'topleft',
                 'height': 64, 'Icon': 'menu.png', 'icon-size': 48, 'shortcut': None},
+            # 2
             {'name': 'left', 'object': None, 'style': None,
              'height': 64, 'Icon': 'go-left.png', 'icon-size': 48, 'shortcut': 'Left'},
+            # 3
             {'name': 'osd', 'object': None, 'style': 'botleft',
              'height': 64, 'Icon': 'osd.png', 'icon-size': 48, 'shortcut': None},
+            # 4
             {'name': 'up', 'object': None, 'style': None,
                 'height': 64, 'Icon': 'go-up.png', 'icon-size': 48, 'shortcut': 'Up'},
+            # 5
             {'name': 'ok', 'object': None, 'style': None,
                 'height': 64, 'Icon': 'ok.png', 'icon-size': 48, 'shortcut': 'Return'},
+            # 6
             {'name': 'down', 'object': None, 'style': None,
                 'height': 64, 'Icon': 'go-down.png', 'icon-size': 48, 'shortcut': 'Down'},
+            # 7
             {'name': 'subs', 'object': None, 'style': 'topright',
                 'height': 64, 'Icon': 'subtitles.png', 'icon-size': 48, 'shortcut': None},
+            # 8
             {'name': 'right', 'object': None, 'style': None,
                 'height': 64, 'Icon': 'go-right.png', 'icon-size': 48, 'shortcut': 'Right'},
+            # 9
             {'name': 'back', 'object': None, 'style': 'botright',
                 'height': 64, 'Icon': 'back.png', 'icon-size': 48, 'shortcut': 'Backspace'},
+            # 10
             {'name': 'connect', 'object': None, 'style': 'left',
                 'height': 64, 'Icon': 'curve-connector.png', 'icon-size': 48, 'shortcut': None},
+            # 11
             {'name': 'reset', 'object': None, 'style': None,
                 'height': 64, 'Icon': 'view-refresh.png', 'icon-size': 48, 'shortcut': None},
+            # 12
             {'name': 'about', 'object': None, 'style': 'right',
                 'height': 64, 'Icon': 'help-about.png', 'icon-size': 48, 'shortcut': None},
+            # 13
             {'name': 'play', 'object': None, 'style': 'left',
                 'height': 32, 'Icon': 'play.png', 'icon-size': 16, 'shortcut': 'c'},
+            # 14
             {'name': 'stop', 'object': None, 'style': None,
                 'height': 32, 'Icon': 'stop.png', 'icon-size': 16, 'shortcut': 'shift+c'},
+            # 15
             {'name': 'rewind', 'object': None, 'style': None,
                 'height': 32, 'Icon': 'rewind.png', 'icon-size': 16, 'shortcut': 'x'},
+            # 16
             {'name': 'forward', 'object': None, 'style': 'right',
                 'height': 32, 'Icon': 'forward.png', 'icon-size': 16, 'shortcut': 'v'},
+            # 17
             {'name': 'Tomorrow', 'object': None, 'style': 'leftsmall',
                 'height': None, 'Icon': None, 'icon-size': 16, 'shortcut': None},
+            # 18
             {'name': 'Today', 'object': None, 'style': 'small',
                 'height': None, 'Icon': None, 'icon-size': 16, 'shortcut': None},
+            # 19
             {'name': 'Yesterday', 'object': None, 'style': 'rightsmall',
                 'height': None, 'Icon': None, 'icon-size': 16, 'shortcut': None},
-
+            # 20
+            {'name': 'quit_kodi', 'object': None, 'style': 'leftred',
+                'height': 32, 'Icon': 'exit_kodi.png', 'icon-size': 24, 'shortcut': None},
+            # 21
+            {'name': 'minimize', 'object': None, 'style': None,
+                'height': 32, 'Icon': 'minimize.png', 'icon-size': 24, 'shortcut': None},
+            # 22
+            {'name': 'close', 'object': None, 'style': 'rightred',
+                'height': 32, 'Icon': 'error.png', 'icon-size': 24, 'shortcut': None},
         ]
 
         for item in self.control_buttons:
@@ -245,6 +295,7 @@ class mainWindow(QtWidgets.QWidget):
             item['object'].clicked.connect(
                 partial(self.commander, item['name']))
 
+        # Subtitles menu object, see also updatesub function
         self.subs_menu = QtWidgets.QMenu(self.control_buttons[6]['object'])
         self.control_buttons[6]['object'].setMenu(self.subs_menu)
         self.subs_menu.aboutToShow.connect(self.updatesub)
@@ -259,26 +310,22 @@ class mainWindow(QtWidgets.QWidget):
                 vboxes[vbox_idx - 1].addStretch()
             vboxes[vbox_idx].addWidget(item['object'])
 
-        hbox1.addStretch()
         for idx, item in enumerate(self.control_buttons[9:12]):
             hbox1.addWidget(item['object'])
-        hbox1.addStretch()
+        self.volume_slider = QtWidgets.QSlider()
+        self.volume_slider.setValue(100)
+        self.volume_slider.setMaximumHeight(200)
 
-        hbox2.addStretch()
         for vbox in vboxes[:3]:
             hbox2.addLayout(vbox)
-        hbox2.addStretch()
 
-        hbox3.addStretch()
         for idx, item in enumerate(self.control_buttons[12:16]):
             item['object'].setDisabled(True)
             hbox3.addWidget(item['object'])
-        hbox3.addStretch()
 
         self.status_label_1 = QtWidgets.QLabel('Ready')
         self.status_label_1.setFont(QtGui.QFont('Monospace', 7))
 
-        # vbox4.addStretch()
         vbox4.addLayout(hbox1)
         vbox4.addSpacing(30)
         vbox4.addLayout(hbox2)
@@ -287,16 +334,27 @@ class mainWindow(QtWidgets.QWidget):
         vbox.addStretch()
 
         hbox4.addStretch()
-        for item in self.control_buttons[16:]:
+        for item in self.control_buttons[16:19]:
             hbox4.addWidget(item['object'])
         hbox4.addStretch()
 
+        hbox5.addStretch()
+        for item in self.control_buttons[19:]:
+            hbox5.addWidget(item['object'])
+            hbox5.setAlignment(item['object'], QtCore.Qt.AlignTop)
+
+        vbox5.addLayout(hbox5)
+        vbox5.addSpacing(30)
         vbox5.addLayout(hbox4)
         vbox5.setAlignment(hbox4, QtCore.Qt.AlignHCenter)
         vbox5.addSpacing(30)
         vbox5.addWidget(self.matches_widget)
         vbox5.setAlignment(self.matches_widget, QtCore.Qt.AlignHCenter)
 
+        self.main_box.setSpacing(0)
+        self.main_box.setContentsMargins(QtCore.QMargins(0, 0, 0, 0))
+        self.main_box.addWidget(self.volume_slider)
+        self.main_box.addSpacing(20)
         self.main_box.addLayout(vbox4)
         self.main_box.addSpacing(30)
         self.main_box.addLayout(vbox5)
@@ -305,19 +363,16 @@ class mainWindow(QtWidgets.QWidget):
         vbox6.addSpacing(20)
         vbox6.addWidget(self.status_label_1)
 
-        # self.main_box.addWidget(self.matches_widget)
-        # self.main_box.setAlignment(
-        # self.matches_widget, QtCore.Qt.AlignHCenter)
         self.setLayout(vbox6)
 
     def commander(self, name):
         print(name)
-        if not internet(host='192.168.1.109', port=8081):
+        if not internet(host='192.168.1.109', port=8081, timeout=5):
             self.status_label_1.setText('Oops disconnected from kodi server')
             self.xbmc_conn = None
             for button in self.control_buttons[:9]:
                 button['object'].setDisabled(True)
-            for button in self.control_buttons[12:]:
+            for button in self.control_buttons[12:16]:
                 button['object'].setDisabled(True)
             return
 
@@ -326,7 +381,7 @@ class mainWindow(QtWidgets.QWidget):
                 with open('xbmcconf.cfg', 'r') as f_obj:
                     xbmc_address = f_obj.read()
                 try:
-                    self.xbmc_conn = XBMC(xbmc_address)
+                    self.xbmc_conn = Kodi(xbmc_address)
                     self.status_label_1.setText(
                         'Successfully connected to ' +
                         re.search(r'\d+\.\d+\.\d+\.\d+', xbmc_address).group())
@@ -337,10 +392,12 @@ class mainWindow(QtWidgets.QWidget):
                     if ok:
                         with open('xbmcconf.cfg', 'w') as f_obj:
                             f_obj.write(text)
-                        self.xbmc_conn = XBMC(text)
+                        self.xbmc_conn = Kodi(text)
                         self.status_label_1.setText(
                             'Successfully connected to ' +
                             re.search(r'\d+\.\d+\.\d+\.\d+', text).group())
+                    else:
+                        return
             else:
                 ipdialog = QtWidgets.QInputDialog()
                 text, ok = ipdialog.getText(self, 'KODI IP',
@@ -348,10 +405,15 @@ class mainWindow(QtWidgets.QWidget):
                 if ok:
                     with open('xbmcconf.cfg', 'w+') as f_obj:
                         f_obj.write(text)
-                    self.xbmc_conn = XBMC(text)
+                    self.xbmc_conn = Kodi(text)
                     self.status_label_1.setText(
                         'Successfully connected to ' +
                         re.search(r'\d+\.\d+\.\d+\.\d+', text).group())
+                else:
+                    return
+
+            self.volume_slider.valueChanged[int].connect(
+                lambda: self.xbmc_conn.Application.setVolume(volume=self.volume_slider.value()))
             for item in self.control_buttons:
                 item['object'].setDisabled(False)
 
@@ -365,6 +427,15 @@ class mainWindow(QtWidgets.QWidget):
 
         if name == 'about':
             pass
+
+        if name == 'quit_kodi':
+            self.xbmc_conn.Application.Quit()
+
+        if name == 'close':
+            QtWidgets.qApp.quit()
+
+        if name == 'minimize':
+            self.showMinimized()
 
         if name == 'up':
             self.xbmc_conn.Input.Up()
@@ -383,6 +454,24 @@ class mainWindow(QtWidgets.QWidget):
 
         if name == 'back':
             self.xbmc_conn.Input.Back()
+
+        if name == 'osd':
+            self.xbmc_conn.Input.ShowOSD()
+
+        if name == 'menu':
+            self.xbmc_conn.Input.ContextMenu()
+
+        if name == 'stop':
+            self.xbmc_conn.Player.Stop([PLAYER_VIDEO])
+
+        if name == 'play':
+            self.xbmc_conn.Player.PlayPause([PLAYER_VIDEO])
+
+        if name == 'rewind':
+            self.xbmc_conn.Input.ExecuteAction(action="rewind")
+
+        if name == 'forward':
+            self.xbmc_conn.Input.ExecuteAction(action="fastforward")
 
         if name == 'Tomorrow':
             self.matches_thread.terminate()
