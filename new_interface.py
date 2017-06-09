@@ -100,6 +100,7 @@ class mainWindow(QtWidgets.QWidget):
         self.setStyleSheet(
             'QWidget {background-color:\#232323; padding: 0px;}\
             QPushButton {background-color: black;\
+            color: white;\
             border-style: outset;\
             border-width: 2px;\
             border-color: white;\
@@ -144,7 +145,7 @@ class mainWindow(QtWidgets.QWidget):
             QPushButton#leftsmall {border-bottom-left-radius: 15px;\
             border-top-left-radius: 15px; font: 15px;}\
             QPushButton#small {font: 15px; min-width: 40px;}\
-            QTableWidget {background-color:\#232323;}\
+            QTableWidget {background-color:\#232323; color: white;}\
             QSlider:groove{border: 1px solid white;\
             width: 8px;\
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:1 \#2a2a2a, stop:0 \#8d0000);}\
@@ -154,6 +155,8 @@ class mainWindow(QtWidgets.QWidget):
             width: 20px;\
             margin: -1px -5;\
             border-radius: 5px; }\
+            QRadioButton{color: white;}\
+            QLabel{color: white;}\
             '
         )
         # Starting the matches thread
@@ -318,6 +321,7 @@ class mainWindow(QtWidgets.QWidget):
         self.channels_buttons = [{'name': 'Ch%s' % i, 'object': None, 'style': 'small', 'height': 32,
                                   'Icon': None, 'icon-size': None, 'shortcut': None} for i in range(1, 26)]
 
+        # create the QPushButton objects using the specified settings
         self.create_buttons(self.control_buttons)
         self.create_buttons(self.channels_buttons)
 
@@ -358,17 +362,25 @@ class mainWindow(QtWidgets.QWidget):
                 hbox.setSpacing(0)
                 hbox.addStretch()
                 vbox8.addLayout(hbox)
-            # item['object'].setFont(QtGui.QFont('Sans', 6))
             item['object'].setCheckable(True)
             item['object'].setDisabled(True)
             hbox.addWidget(item['object'])
         hbox.addStretch()
+
+        main_box2 = QtWidgets.QHBoxLayout()
+        vbox7 = QtWidgets.QVBoxLayout()
+        self.open_url = QtWidgets.QPushButton('Play a URL')
+        self.send_text = QtWidgets.QPushButton('Send text')
+        vbox7.addWidget(self.open_url)
+        vbox7.addWidget(self.send_text)
+        main_box2.addLayout(vbox8)
+        main_box2.addLayout(vbox7)
         # channels quality and organization code ends here
 
         for idx, item in enumerate(self.control_buttons[9:12]):
             hbox1.addWidget(item['object'])
 
-        # Volume slider
+        # Volume slider and the mute button
         self.volume_slider = QtWidgets.QSlider()
         self.volume_slider.setValue(100)
         self.volume_slider.setMinimumHeight(200)
@@ -432,11 +444,29 @@ class mainWindow(QtWidgets.QWidget):
         self.main_box.setSpacing(0)
 
         vbox6.addLayout(self.main_box)
-        vbox6.addLayout(vbox8)
+        vbox6.addLayout(main_box2)
         vbox6.addSpacing(20)
         vbox6.addWidget(self.status_label_1)
 
         self.setLayout(vbox6)
+
+    def setvolume(self, volume):
+        self.xbmc_conn.Application.setVolume(volume=volume)
+        if volume >= 66:
+            self.mutebutton.setIcon(QtGui.QIcon('buttons/volume_full.png'))
+        elif volume >= 33:
+            self.mutebutton.setIcon(QtGui.QIcon('buttons/volume_med.png'))
+        elif volume > 0:
+            self.mutebutton.setIcon(QtGui.QIcon('buttons/volume_low.png'))
+        elif volume == 0:
+            self.mutebutton.setIcon(QtGui.QIcon('buttons/volume_mute.png'))
+
+    def openurlf(self):
+        ipdialog = QtWidgets.QInputDialog()
+        text, ok = ipdialog.getText(self, 'URL',
+                                    'Please enter the URL you want to play:', text="")
+        if ok:
+            self.xbmc_conn.Player.Open(item={"file": text})
 
     def commander(self, name):
         print(name)
@@ -504,8 +534,8 @@ class mainWindow(QtWidgets.QWidget):
                 else:
                     return
 
-            self.volume_slider.valueChanged[int].connect(
-                lambda: self.xbmc_conn.Application.setVolume(volume=self.volume_slider.value()))
+            self.open_url.clicked.connect(self.openurlf)
+            self.volume_slider.valueChanged[int].connect(self.setvolume)
             for item in self.control_buttons:
                 item['object'].setDisabled(False)
             for item in self.channels_buttons:
